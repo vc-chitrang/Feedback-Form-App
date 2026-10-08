@@ -117,6 +117,11 @@ export function App() {
     <div className={kiosk ? 'kiosk h-full' : 'h-full'} onContextMenu={kiosk ? (e) => e.preventDefault() : undefined}>
       {content}
       {kiosk && state.phase !== 'unpaired' && <div aria-hidden className="fixed top-0 left-0 z-40 size-16" onPointerDown={onCornerTap} />}
+      {state.phase === 'ready' && state.version && screen === 'welcome' && (
+        <div className="pointer-events-none fixed bottom-4 left-4 z-30 text-xs text-stone-400 tabular-nums" aria-label={`Form version ${state.version.number}`}>
+          v{state.version.number}
+        </div>
+      )}
       {showSyncBadge && (
         <div className="fixed right-4 bottom-4 z-30 flex items-center gap-2 rounded-full bg-white/90 px-3 py-1.5 text-xs text-stone-500 shadow-sm ring-1 ring-stone-200">
           <CloudOff className="size-3.5" />

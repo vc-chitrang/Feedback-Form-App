@@ -7,9 +7,6 @@
  * Requests arrive as /api/... because the function is named "api".
  */
 import type { FastifyInstance } from 'fastify';
-import { buildApp } from './app';
-import { openPostgres } from './db';
-import { SupabaseStorage } from './storage';
 
 interface DenoLike {
   env: { get(name: string): string | undefined };
@@ -20,9 +17,13 @@ const env = (name: string) => Deno.env.get(name) ?? '';
 const list = (v: string) => v.split(',').map((s) => s.trim()).filter(Boolean);
 
 let appPromise: Promise<FastifyInstance> | null = null;
+/** Last startup error message (no stack), shown only on /api/health to aid diagnosis. */
+let lastError = '';
 
 function getApp(): Promise<FastifyInstance> {
   appPromise ??= (async () => {
+    // Loaded lazily so a startup failure is caught and reported instead of crashing the worker.
+    const [{ buildApp }, { openPostgres }, { SupabaseStorage }] = await Promise.all([import('./app'), import('./db'), import('./storage')]);
     // SUPABASE_DB_URL / SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY are injected by Supabase.
     const db = await openPostgres(env('SUPABASE_DB_URL'), { max: 2 });
     const app = await buildApp({
@@ -68,7 +69,9 @@ Deno.serve(async (req: Request) => {
     return new Response(body, { status: res.statusCode, headers });
   } catch (e) {
     console.error('edge handler failed', e);
-    return new Response(JSON.stringify({ error: { code: 'internal', message: 'Service temporarily unavailable' } }), {
+    lastError = e instanceof Error ? `${e.name}: ${e.message}` : String(e);
+    const onHealth = new URL(req.url).pathname.endsWith('/health');
+    return new Response(JSON.stringify({ error: { code: 'internal', message: 'Service temporarily unavailable', ...(onHealth ? { detail: lastError } : {}) } }), {
       status: 503,
       headers: { 'Content-Type': 'application/json' },
     });

@@ -15,7 +15,9 @@
     "dev:client": "npm run dev -w client-app",
     "typecheck": "tsc -p packages/form-schema && tsc -p packages/form-renderer && tsc -p api && tsc -p admin-app && tsc -p client-app",
     "test": "vitest run",
-    "build": "npm run build -w admin-app && npm run build -w client-app"
+    "build": "npm run build -w admin-app && npm run build -w client-app",
+    "seed:demo": "npm run seed:demo -w api",
+    "admin:password": "npm run admin:password -w api"
   },
   "devDependencies": {
     "@types/node": "^26.6.4",

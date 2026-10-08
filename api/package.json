@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch --clear-screen=false src/index.ts",
-    "start": "tsx src/index.ts"
+    "start": "tsx src/index.ts",
+    "seed:demo": "tsx src/seed-demo.ts",
+    "admin:password": "tsx src/set-admin-password.ts"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.8",

@@ -27,6 +27,25 @@ Local data lives in `api/data/` (database) and `api/storage/` (logos) — both g
 
 To test phones/tablets on the same Wi-Fi, open the client via this computer's LAN IP (Vite listens on all interfaces) and set `VITE_CLIENT_URL=http://<lan-ip>:5174` for the admin QR code.
 
+### Demo data
+
+Stop the API first (the local database allows one process), then:
+
+```bash
+npm run seed:demo        # once: publishes v3 (every question type) + v4, adds ~170 dummy responses
+npm run admin:password   # set the admin password to ADMIN_PASSWORD from api/.env
+```
+
+| Version | What it shows |
+|---|---|
+| v1 | Sample museum form (rating, choice, multi-choice + Other, age chips, NPS, comments, contact, consent) |
+| v2 | Age group removed, “Is this your first visit?” added |
+| v3 | All 16 question types: dropdown, number, date, slider, smiley, 10-star rating, exclusive “None of these”, section; age group **restored with the same id** |
+| v4 | Live. Slider/number/area/date removed, “Tour group” renamed “Guided tour” (same option id → merged in reports), NPS moved first, new short-text question |
+
+Responses are spread over ~70 days, kiosk + QR channels, two kiosks. All personal data is fictional (`@example.com`).
+To start completely fresh: stop the API, delete `api/data/` and `api/storage/`, run `npm run dev`, stop, `npm run seed:demo`.
+
 ```bash
 npm test           # schema + API integration tests (in-memory DB)
 npm run typecheck  # all workspaces

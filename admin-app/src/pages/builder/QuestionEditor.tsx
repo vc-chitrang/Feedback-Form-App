@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ArrowDown, ArrowUp, Info, Plus, Trash2 } from 'lucide-react';
-import { getCountries } from 'libphonenumber-js';
+import { getCountries, getCountryCallingCode } from 'libphonenumber-js';
 import {
   createOption,
   createQuestion,
@@ -14,7 +14,7 @@ import {
   type Question,
   type QuestionType,
 } from '@ff/form-schema';
-import { Button, Field, IconButton, Select, TextArea, TextInput, Toggle, useConfirm } from '../../components/ui';
+import { Button, Field, IconButton, Select, TextArea, TextInput, Toggle, useConfirm, type SelectOption } from '../../components/ui';
 import { QUESTION_ICONS } from '../../lib/questionIcons';
 
 interface Props {
@@ -165,6 +165,19 @@ function OptionsEditor({
 }
 
 const COUNTRIES = getCountries();
+const regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
+const COUNTRY_OPTIONS: SelectOption[] = COUNTRIES.map((c) => ({ value: c, label: `${regionNames.of(c) ?? c} (+${getCountryCallingCode(c)})` })).sort((a, b) =>
+  a.label.localeCompare(b.label),
+);
+
+const CATEGORY_ORDER = ['Choice', 'Scale', 'Text', 'Contact', 'Other'] as const;
+/** Question types grouped by category, with icon + description, for the Type picker. */
+const TYPE_OPTIONS: SelectOption[] = CATEGORY_ORDER.flatMap((cat) =>
+  QUESTION_TYPES.filter((type) => QUESTION_TYPE_META[type].category === cat).map((type) => {
+    const Icon = QUESTION_ICONS[type];
+    return { value: type, label: QUESTION_TYPE_META[type].label, description: QUESTION_TYPE_META[type].description, group: cat, icon: <Icon className="size-4" /> };
+  }),
+);
 
 export function QuestionEditor({ q, index, locale, readOnly, publishedType, answerCount, onChange, onReplace }: Props) {
   const confirm = useConfirm();
@@ -209,13 +222,7 @@ export function QuestionEditor({ q, index, locale, readOnly, publishedType, answ
       </div>
 
       <Field label="Type">
-        <Select value={q.type} disabled={readOnly} onChange={(e) => void changeType(e.target.value as QuestionType)}>
-          {QUESTION_TYPES.map((type) => (
-            <option key={type} value={type}>
-              {QUESTION_TYPE_META[type].label} — {QUESTION_TYPE_META[type].description}
-            </option>
-          ))}
-        </Select>
+        <Select value={q.type} disabled={readOnly} aria-label="Question type" options={TYPE_OPTIONS} onChange={(e) => void changeType(e.target.value as QuestionType)} />
       </Field>
 
       {answerCount > 0 && (
@@ -288,13 +295,7 @@ export function QuestionEditor({ q, index, locale, readOnly, publishedType, answ
 
       {q.type === 'phone' && (
         <Field label="Default country">
-          <Select value={q.defaultCountry ?? 'IN'} disabled={readOnly} onChange={(e) => patch({ defaultCountry: e.target.value })}>
-            {COUNTRIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </Select>
+          <Select value={q.defaultCountry ?? 'IN'} disabled={readOnly} options={COUNTRY_OPTIONS} onChange={(e) => patch({ defaultCountry: e.target.value })} />
         </Field>
       )}
 

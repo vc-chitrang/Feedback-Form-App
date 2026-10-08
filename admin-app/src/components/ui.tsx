@@ -105,13 +105,7 @@ export function TextArea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return <textarea {...props} className={cx(inputClass, 'py-2 leading-relaxed', props.className)} />;
 }
 
-export function Select({ className, children, ...rest }: React.SelectHTMLAttributes<HTMLSelectElement>) {
-  return (
-    <select {...rest} className={cx(inputClass, 'h-10 pr-8', className)}>
-      {children}
-    </select>
-  );
-}
+export { Select, type SelectOption } from './Select';
 
 export function Toggle({ checked, onChange, label, disabled }: { checked: boolean; onChange: (v: boolean) => void; label: ReactNode; disabled?: boolean }) {
   return (

@@ -4,6 +4,8 @@ import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
+  // Sub-path when hosted (e.g. /Feedback-Form-App/client/); "/" locally.
+  base: process.env.VITE_BASE ?? '/',
   plugins: [
     react(),
     tailwindcss(),
@@ -19,11 +21,11 @@ export default defineConfig({
         orientation: 'any',
         background_color: '#fafaf9',
         theme_color: '#7a1f2b',
-        icons: [{ src: '/icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' }],
+        icons: [{ src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' }],
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,woff2}'],
-        navigateFallback: '/index.html',
+        navigateFallback: 'index.html',
         // API responses are cached by the app itself (IndexedDB), never by the service worker.
         navigateFallbackDenylist: [/^\/api\//],
       },

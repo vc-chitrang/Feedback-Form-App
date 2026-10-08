@@ -6,7 +6,7 @@
  */
 import { resolve } from 'node:path';
 import { hashPassword } from './auth';
-import { openDb } from './db';
+import { openConfiguredDb as openDbFrom } from './db';
 
 try {
   process.loadEnvFile(resolve(import.meta.dirname, '../.env'));
@@ -21,7 +21,7 @@ if (!email || password.length < 12) {
   process.exit(1);
 }
 
-const db = await openDb(resolve(import.meta.dirname, '..', process.env.DATA_DIR ?? 'data/pgdata'));
+const db = await openDbFrom(resolve(import.meta.dirname, '..', process.env.DATA_DIR ?? 'data/pgdata'));
 try {
   const hash = await hashPassword(password);
   const { rows } = await db.query<{ id: string }>('update admin_user set password_hash = $2 where email = $1 returning id', [email, hash]);

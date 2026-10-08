@@ -3,7 +3,7 @@ import { ImagePlus, Lock, Pencil, Rocket, Trash2, Upload } from 'lucide-react';
 import { ThankYouScreen, WelcomeScreen } from '@ff/form-renderer';
 import { Button, Card, Field, PageHeader, PageLoader, Select, useToast } from '../components/ui';
 import { DevicePreview, DeviceToggle, type PreviewDevice } from '../components/DevicePreview';
-import { api } from '../lib/api';
+import { api, assetUrl } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { useDraft } from '../lib/draft';
 import { PublishDialog } from './builder/PublishDialog';
@@ -92,7 +92,7 @@ export function BrandingPage() {
               className={`grid min-h-40 place-items-center rounded-xl border-2 border-dashed p-4 transition ${dragOver ? 'border-stone-900 bg-stone-50' : 'border-stone-300'}`}
             >
               {doc.theme.logoUrl ? (
-                <img src={doc.theme.logoUrl} alt="Current logo" className="max-h-32 max-w-full object-contain" />
+                <img src={assetUrl(doc.theme.logoUrl) ?? undefined} alt="Current logo" className="max-h-32 max-w-full object-contain" />
               ) : (
                 <div className="text-center text-sm text-stone-500">
                   <ImagePlus className="mx-auto mb-2 size-8 text-stone-400" />
@@ -184,13 +184,13 @@ export function BrandingPage() {
           <div>
             <p className="mb-2 text-sm font-medium text-stone-600">Welcome screen</p>
             <DevicePreview device={device}>
-              <WelcomeScreen doc={doc} locale={L} logoSrc={doc.theme.logoUrl} onStart={() => {}} />
+              <WelcomeScreen doc={doc} locale={L} logoSrc={assetUrl(doc.theme.logoUrl)} onStart={() => {}} />
             </DevicePreview>
           </div>
           <div>
             <p className="mb-2 text-sm font-medium text-stone-600">Thank-you screen</p>
             <DevicePreview device={device}>
-              <ThankYouScreen doc={doc} locale={L} logoSrc={doc.theme.logoUrl} />
+              <ThankYouScreen doc={doc} locale={L} logoSrc={assetUrl(doc.theme.logoUrl)} />
             </DevicePreview>
           </div>
         </div>

@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { admin, createSession, requireAdmin, SESSION_COOKIE, SESSION_TTL_MS, verifyPassword, type Role } from '../auth';
+import { admin, createSession, requireAdmin, sessionToken, SESSION_COOKIE, SESSION_TTL_MS, verifyPassword, type Role } from '../auth';
 import { HttpError, parse, sha256 } from '../util';
 
 const LoginBody = z.object({
@@ -32,12 +32,13 @@ export async function authRoutes(app: FastifyInstance) {
         path: '/',
         maxAge: SESSION_TTL_MS / 1000,
       });
-      return { ok: true };
+      // token is also returned for cross-origin admin apps, which send it as a Bearer header.
+      return { ok: true, token };
     },
   );
 
   app.post('/api/admin/auth/logout', async (req, reply) => {
-    const token = req.cookies[SESSION_COOKIE];
+    const token = sessionToken(req);
     if (token) await app.db.query('delete from admin_session where token_hash = $1', [sha256(token)]);
     reply.clearCookie(SESSION_COOKIE, { path: '/' });
     return { ok: true };

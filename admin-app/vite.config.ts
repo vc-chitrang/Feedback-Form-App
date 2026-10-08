@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
+  // Sub-path when hosted (e.g. /Feedback-Form-App/admin/); "/" locally.
+  base: process.env.VITE_BASE ?? '/',
   plugins: [react(), tailwindcss()],
   resolve: { dedupe: ['react', 'react-dom'] },
   server: {

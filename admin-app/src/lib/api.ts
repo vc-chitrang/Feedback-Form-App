@@ -11,15 +11,50 @@ export class ApiError extends Error {
   }
 }
 
-/** Fetch wrapper: JSON in/out, cookie auth, typed errors. */
+/**
+ * API location. Empty locally (Vite proxies /api); set VITE_API_BASE for the hosted build,
+ * e.g. https://<project>.supabase.co/functions/v1
+ */
+export const API_BASE = ((import.meta.env.VITE_API_BASE as string | undefined) ?? '').replace(/\/$/, '');
+export const apiUrl = (path: string) => (path.startsWith('/api') ? `${API_BASE}${path}` : path);
+/** Logo URLs are stored as "/api/assets/…"; resolve them against the API host. */
+export const assetUrl = (url: string | null | undefined) => (url ? apiUrl(url) : null);
+
+// Cross-origin hosting can't rely on the httpOnly cookie, so the session token is also kept in
+// sessionStorage (cleared when the tab closes) and sent as a Bearer header.
+const TOKEN_KEY = 'ff_admin_token';
+export const sessionStore = {
+  get: () => {
+    try {
+      return sessionStorage.getItem(TOKEN_KEY);
+    } catch {
+      return null;
+    }
+  },
+  set: (t: string | null) => {
+    try {
+      if (t) sessionStorage.setItem(TOKEN_KEY, t);
+      else sessionStorage.removeItem(TOKEN_KEY);
+    } catch {
+      /* storage unavailable: cookie auth still works same-origin */
+    }
+  },
+};
+
+/** Fetch wrapper: JSON in/out, cookie or bearer auth, typed errors. */
 export async function api<T>(path: string, init: RequestInit & { json?: unknown } = {}): Promise<T> {
   const { json, headers, ...rest } = init;
+  const token = sessionStore.get();
   let res: Response;
   try {
-    res = await fetch(path, {
+    res = await fetch(apiUrl(path), {
       credentials: 'same-origin',
       ...rest,
-      headers: { ...(json !== undefined ? { 'Content-Type': 'application/json' } : {}), ...headers },
+      headers: {
+        ...(json !== undefined ? { 'Content-Type': 'application/json' } : {}),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...headers,
+      },
       body: json !== undefined ? JSON.stringify(json) : rest.body,
     });
   } catch {
@@ -29,7 +64,10 @@ export async function api<T>(path: string, init: RequestInit & { json?: unknown 
   const body = await res.json().catch(() => null);
   if (!res.ok) {
     const err = body?.error;
-    if (res.status === 401 && path !== '/api/admin/auth/login') window.dispatchEvent(new Event('ff:unauthenticated'));
+    if (res.status === 401 && path !== '/api/admin/auth/login') {
+      sessionStore.set(null);
+      window.dispatchEvent(new Event('ff:unauthenticated'));
+    }
     throw new ApiError(res.status, err?.code ?? 'error', err?.message ?? `Request failed (${res.status})`, err?.details);
   }
   return body as T;

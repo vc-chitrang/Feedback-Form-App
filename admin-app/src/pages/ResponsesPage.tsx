@@ -3,7 +3,7 @@ import { ChevronDown, Download, Inbox, Lock, MessageSquareText, Smartphone, Tabl
 import { EMOJI_SCALE } from '@ff/form-schema';
 import { cx } from '@ff/form-renderer';
 import { Badge, Button, Card, EmptyState, Field, formatDateTime, PageHeader, PageLoader, Select, TextInput, useToast } from '../components/ui';
-import { api, type ResponseItem, type Summary, type VersionItem } from '../lib/api';
+import { api, apiUrl, sessionStore, type ResponseItem, type Summary, type VersionItem } from '../lib/api';
 
 interface Filters {
   versionId: string;
@@ -174,6 +174,29 @@ export function ResponsesPage() {
     void load();
   }, [load]);
 
+  // Download via fetch (not a plain link) so the bearer token is sent when the API is on another domain.
+  const [exporting, setExporting] = useState(false);
+  const exportCsv = async () => {
+    setExporting(true);
+    try {
+      const token = sessionStore.get();
+      const res = await fetch(apiUrl(`/api/admin/responses/export.csv${toQuery(filters)}`), {
+        credentials: 'same-origin',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) throw new Error(`Export failed (${res.status})`);
+      const name = /filename="([^"]+)"/.exec(res.headers.get('Content-Disposition') ?? '')?.[1] ?? 'feedback.csv';
+      const href = URL.createObjectURL(await res.blob());
+      const a = Object.assign(document.createElement('a'), { href, download: name });
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(href), 1000);
+    } catch (e) {
+      toast('error', e instanceof Error ? e.message : 'Export failed');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const loadMore = async () => {
     if (!cursor) return;
     setLoadingMore(true);
@@ -192,11 +215,9 @@ export function ResponsesPage() {
         title="Responses"
         description="Results combine every version by question, so removed questions keep their history."
         actions={
-          <a href={`/api/admin/responses/export.csv${toQuery(filters)}`} download>
-            <Button variant="primary" icon={<Download className="size-4" />}>
-              Export CSV
-            </Button>
-          </a>
+          <Button variant="primary" icon={<Download className="size-4" />} loading={exporting} onClick={() => void exportCsv()}>
+            Export CSV
+          </Button>
         }
       />
 

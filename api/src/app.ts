@@ -14,6 +14,8 @@ export interface AppConfig {
   cookieSecure: boolean;
   /** Browser origins allowed to call /api/admin mutations (CSRF defence in depth). */
   adminOrigins: string[];
+  /** Browser origins allowed to call the API cross-origin (hosted apps). Empty = same-origin only. */
+  corsOrigins: string[];
 }
 
 declare module 'fastify' {
@@ -36,6 +38,25 @@ export async function buildApp(opts: { db: Db; storage: BlobStorage; config: App
   await app.register(cookie);
   await app.register(multipart);
   await app.register(rateLimit, { global: false });
+
+  // CORS for the hosted apps (GitHub Pages) calling the API on another domain.
+  // Auth uses Authorization headers (not cookies) cross-origin, so credentials are not allowed.
+  app.addHook('onRequest', async (req, reply) => {
+    const origin = req.headers.origin;
+    if (!origin || !opts.config.corsOrigins.includes(origin)) return;
+    reply
+      .header('Access-Control-Allow-Origin', origin)
+      .header('Vary', 'Origin')
+      .header('Access-Control-Expose-Headers', 'ETag, Content-Disposition');
+    if (req.method === 'OPTIONS') {
+      reply
+        .header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+        .header('Access-Control-Allow-Headers', 'Authorization, Content-Type, If-None-Match')
+        .header('Access-Control-Max-Age', '600')
+        .code(204)
+        .send();
+    }
+  });
 
   // Admin mutations must come from the admin app's origin (cookie is also SameSite=Strict).
   app.addHook('onRequest', async (req) => {

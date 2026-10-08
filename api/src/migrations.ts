@@ -158,4 +158,22 @@ create table audit_log (
 create index audit_log_tenant_idx on audit_log (tenant_id, created_at desc);
 `,
   },
+  {
+    id: 2,
+    // Supabase exposes the public schema through its REST API with a public 'anon' key.
+    // Enable RLS with NO policies (deny all) and revoke grants, so only the API's own database
+    // connection (table owner) can read or write. Role checks keep this a no-op on local PGlite.
+    sql: /* sql */ `
+do $$
+declare t text;
+begin
+  foreach t in array array['_migrations','tenant','admin_user','admin_session','form','form_version','device','pairing_code','submission','answer','asset','audit_log'] loop
+    execute format('alter table %I enable row level security', t);
+    if exists (select 1 from pg_roles where rolname = 'anon') then
+      execute format('revoke all on table %I from anon, authenticated', t);
+    end if;
+  end loop;
+end $$;
+`,
+  },
 ];

@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
-import { api, ApiError, type Me } from './api';
+import { api, ApiError, sessionStore, type Me } from './api';
 
 interface AuthState {
   me: Me | null;
@@ -34,11 +34,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [refresh]);
 
   const login = async (email: string, password: string) => {
-    await api('/api/admin/auth/login', { method: 'POST', json: { email, password } });
+    const r = await api<{ token?: string }>('/api/admin/auth/login', { method: 'POST', json: { email, password } });
+    sessionStore.set(r.token ?? null);
     await refresh();
   };
   const logout = async () => {
     await api('/api/admin/auth/logout', { method: 'POST' }).catch(() => {});
+    sessionStore.set(null);
     setMe(null);
   };
 

@@ -1,0 +1,74 @@
+name: Deploy apps to GitHub Pages
+
+# Publishes:
+#   https://vc-chitrang.github.io/Feedback-Form-App/admin/   (admin app)
+#   https://vc-chitrang.github.io/Feedback-Form-App/client/  (kiosk + QR client)
+# Both call the API running as a Supabase Edge Function.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  # Public values only (no secrets): where the API lives and where the apps are served.
+  API_BASE: https://xzaaiztphayjjnvkkmvl.supabase.co/functions/v1
+  SITE: https://vc-chitrang.github.io/Feedback-Form-App
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm test
+
+      - name: Build admin app
+        run: npm run build -w admin-app
+        env:
+          VITE_BASE: /Feedback-Form-App/admin/
+          VITE_API_BASE: ${{ env.API_BASE }}
+          VITE_HASH_ROUTER: 'true'
+          VITE_CLIENT_URL: ${{ env.SITE }}/client
+
+      - name: Build client app
+        run: npm run build -w client-app
+        env:
+          VITE_BASE: /Feedback-Form-App/client/
+          VITE_API_BASE: ${{ env.API_BASE }}
+
+      - name: Assemble site
+        run: |
+          mkdir -p site
+          cp -r admin-app/dist site/admin
+          cp -r client-app/dist site/client
+          cp docs/site-index.html site/index.html
+          touch site/.nojekyll
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

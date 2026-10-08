@@ -4,7 +4,7 @@ import type { FormDoc } from '@ff/form-schema';
 import { FormFlow, WelcomeScreen } from '@ff/form-renderer';
 import { Badge, Button, Card, EmptyState, formatDateTime, Modal, PageHeader, PageLoader, useConfirm, useToast } from '../components/ui';
 import { DevicePreview } from '../components/DevicePreview';
-import { api, type VersionItem } from '../lib/api';
+import { api, assetUrl, type VersionItem } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { useDraft } from '../lib/draft';
 
@@ -121,7 +121,7 @@ export function VersionsPage() {
         {preview && (
           <DevicePreview device="tablet">
             {showWelcome ? (
-              <WelcomeScreen doc={preview.doc} locale={preview.doc.defaultLocale} logoSrc={preview.doc.theme.logoUrl} onStart={() => setShowWelcome(false)} />
+              <WelcomeScreen doc={preview.doc} locale={preview.doc.defaultLocale} logoSrc={assetUrl(preview.doc.theme.logoUrl)} onStart={() => setShowWelcome(false)} />
             ) : (
               <FormFlow doc={preview.doc} locale={preview.doc.defaultLocale} onExit={() => setShowWelcome(true)} onSubmit={() => setShowWelcome(true)} />
             )}

@@ -6,6 +6,7 @@ import { Button, Card, EmptyState, PageLoader, useConfirm, useToast } from '../.
 import { DevicePreview, DeviceToggle, Segmented, type PreviewDevice } from '../../components/DevicePreview';
 import { useAuth } from '../../lib/auth';
 import { useDraft, type SaveState } from '../../lib/draft';
+import { assetUrl } from '../../lib/api';
 import { AddQuestionMenu } from './AddQuestionMenu';
 import { PublishDialog } from './PublishDialog';
 import { QuestionEditor } from './QuestionEditor';
@@ -312,7 +313,7 @@ export function BuilderPage() {
               <DeviceToggle value={device} onChange={setDevice} />
             </div>
             <DevicePreview device={device}>
-              {screen === 'welcome' && <WelcomeScreen doc={doc} locale={L} logoSrc={doc.theme.logoUrl} onStart={() => setScreen('form')} />}
+              {screen === 'welcome' && <WelcomeScreen doc={doc} locale={L} logoSrc={assetUrl(doc.theme.logoUrl)} onStart={() => setScreen('form')} />}
               {screen === 'form' && (
                 <FormFlow
                   doc={doc}
@@ -323,7 +324,7 @@ export function BuilderPage() {
                   onSubmit={() => setScreen('thanks')}
                 />
               )}
-              {screen === 'thanks' && <ThankYouScreen doc={doc} locale={L} logoSrc={doc.theme.logoUrl} onDone={() => setScreen('welcome')} />}
+              {screen === 'thanks' && <ThankYouScreen doc={doc} locale={L} logoSrc={assetUrl(doc.theme.logoUrl)} onDone={() => setScreen('welcome')} />}
             </DevicePreview>
             <p className="mt-2 text-center text-xs text-stone-500">Preview — answers here are not saved.</p>
           </div>

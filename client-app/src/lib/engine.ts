@@ -3,6 +3,10 @@ import type { FormDoc, SubmissionPayload } from '@ff/form-schema';
 
 export const APP_VERSION = '0.1.0';
 
+/** API host: empty locally (Vite proxy); VITE_API_BASE for the hosted build. */
+const API = ((import.meta.env.VITE_API_BASE as string | undefined) ?? '').replace(/\/$/, '');
+const apiUrl = (path: string) => (path.startsWith('/api') ? API + path : path);
+
 export type Mode = { kind: 'kiosk' } | { kind: 'public'; slug: string };
 
 export interface CachedVersion {
@@ -101,7 +105,7 @@ export class Engine {
   }
 
   private get base() {
-    return this.mode.kind === 'kiosk' ? '/api/client' : `/api/public/${encodeURIComponent(this.mode.slug)}`;
+    return API + (this.mode.kind === 'kiosk' ? '/api/client' : `/api/public/${encodeURIComponent(this.mode.slug)}`);
   }
   private get versionKey() {
     return `version:${this.scope}`;
@@ -173,7 +177,7 @@ export class Engine {
   async pair(code: string) {
     let res: Response;
     try {
-      res = await fetch('/api/client/pair', {
+      res = await fetch(apiUrl('/api/client/pair'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code, appVersion: APP_VERSION }),
@@ -251,7 +255,7 @@ export class Engine {
     const v = (await res.json()) as { id: string; number: number; doc: FormDoc };
     let logo: Blob | null = null;
     if (v.doc.theme.logoUrl) {
-      const lr = await fetch(v.doc.theme.logoUrl);
+      const lr = await fetch(apiUrl(v.doc.theme.logoUrl));
       if (lr.ok) logo = await lr.blob();
       else if (lr.status !== 404) throw new Error(`logo ${lr.status}`); // retry later; 404 → no logo
     }
@@ -327,7 +331,7 @@ export class Engine {
   private async heartbeat() {
     if (this.mode.kind !== 'kiosk' || !this.device) return;
     try {
-      const res = await fetch('/api/client/heartbeat', {
+      const res = await fetch(apiUrl('/api/client/heartbeat'), {
         method: 'POST',
         headers: this.headers(true),
         body: JSON.stringify({ runningVersionId: this.state.version?.id ?? null, outboxSize: this.state.outbox, appVersion: APP_VERSION }),

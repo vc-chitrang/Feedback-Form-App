@@ -19,7 +19,7 @@ import {
   type Question,
 } from '@ff/form-schema';
 import type { AdminContext, Role } from './auth';
-import { openDb, type Db } from './db';
+import { openConfiguredDb, type Db } from './db';
 import { ensureDraft, getLiveVersion, getTenantForm, publishDraft, saveDraft } from './services/forms';
 import { ingestSubmission } from './services/submissions';
 import { newId, sha256, newSecret } from './util';
@@ -293,7 +293,7 @@ async function fill(db: Db, ctx: AdminContext, formId: string, versionId: string
 }
 
 async function main() {
-  const db = await openDb(resolve(import.meta.dirname, '..', process.env.DATA_DIR ?? 'data/pgdata'));
+  const db = await openConfiguredDb(resolve(import.meta.dirname, '..', process.env.DATA_DIR ?? 'data/pgdata'));
   try {
     const ctx = await getOwnerContext(db);
     const already = await db.query<{ n: number }>(`select count(*)::int as n from audit_log where tenant_id = $1 and action = 'demo.seed'`, [ctx.tenantId]);

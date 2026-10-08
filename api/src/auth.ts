@@ -73,10 +73,18 @@ export async function createSession(db: Queryable, userId: string): Promise<stri
   return token;
 }
 
+/** Admin session token: httpOnly cookie (same-origin) or `Authorization: Bearer` (hosted, cross-origin). */
+export function sessionToken(req: FastifyRequest): string | undefined {
+  const cookie = req.cookies[SESSION_COOKIE];
+  if (cookie) return cookie;
+  const header = req.headers.authorization ?? '';
+  return header.startsWith('Bearer ') ? header.slice(7).trim() || undefined : undefined;
+}
+
 /** preHandler factory: requires a valid admin session with at least `minRole`. */
 export function requireAdmin(minRole: Role = 'viewer') {
   return async (req: FastifyRequest, _reply: FastifyReply) => {
-    const token = req.cookies[SESSION_COOKIE];
+    const token = sessionToken(req);
     if (!token) throw new HttpError(401, 'unauthenticated', 'Please sign in');
     const { rows } = await req.server.db.query<{
       user_id: string;

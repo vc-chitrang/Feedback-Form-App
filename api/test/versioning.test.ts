@@ -3,7 +3,7 @@ import type { FastifyInstance } from 'fastify';
 import { createQuestion, uuidv4, type FormDoc, type Question } from '@ff/form-schema';
 import { buildApp } from '../src/app';
 import { bootstrap } from '../src/bootstrap';
-import { openDb, type Db } from '../src/db';
+import { openDb, openPostgres, type Db } from '../src/db';
 import { MemoryStorage } from '../src/storage';
 
 // Test-only credentials for an in-memory database.
@@ -45,8 +45,9 @@ function submissionFor(versionId: string, doc: FormDoc, id = uuidv4()) {
 }
 
 beforeAll(async () => {
-  db = await openDb(); // in-memory
-  app = await buildApp({ db, storage: new MemoryStorage(), config: { cookieSecure: false, adminOrigins: [] } });
+  // TEST_DATABASE_URL → run the same suite through the real Postgres driver (Supabase path).
+  db = process.env.TEST_DATABASE_URL ? await openPostgres(process.env.TEST_DATABASE_URL, { max: 1 }) : await openDb(); // in-memory
+  app = await buildApp({ db, storage: new MemoryStorage(), config: { cookieSecure: false, adminOrigins: [], corsOrigins: [] } });
   await bootstrap(db, { tenantName: 'Test Museum', tenantSlug: 'test-museum', adminEmail: EMAIL, adminPassword: PASSWORD }, app.log);
 
   const login = await app.inject({ method: 'POST', url: '/api/admin/auth/login', payload: { email: EMAIL, password: PASSWORD } });

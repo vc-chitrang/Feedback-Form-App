@@ -4,7 +4,28 @@ Visitor feedback for museums (and any venue: real estate, clinics, events…).
 
 - **admin-app** — build the form (CRUD, drag-to-reorder), draft → publish, versions & rollback, logo, kiosk settings, devices, responses & CSV export.
 - **client-app** — kiosk tablet app (offline-first) **and** visitor phone form via QR link. Welcome → one question per screen → thank you.
-- **api** — Fastify + local PostgreSQL (PGlite, stored in a folder) + local file storage for logos.
+- **api** — Fastify. Hosted: Supabase Edge Function + Supabase Postgres + Supabase Storage. Local: PGlite folder + disk.
+
+## Live
+
+| App | URL |
+|---|---|
+| Admin | https://vc-chitrang.github.io/Feedback-Form-App/admin/ — sign in with the admin account |
+| Kiosk | https://vc-chitrang.github.io/Feedback-Form-App/client/ — pair with a code from **Admin → Devices & QR → Add kiosk** |
+| Phone (QR) | https://vc-chitrang.github.io/Feedback-Form-App/client/?f=demo-museum |
+| API | https://xzaaiztphayjjnvkkmvl.supabase.co/functions/v1/api/health |
+
+```
+GitHub Pages (static)                        Supabase project xzaaiztphayjjnvkkmvl
+  /admin/  ──┐   HTTPS + Bearer token          Edge Function "api"  (same Fastify app, bundled)
+  /client/ ──┴──────────────────────────────▶    ├─ Postgres  (RLS on, no public access)
+                                                 └─ Storage   (private "logos" bucket)
+```
+
+- Pushing to `main` rebuilds and redeploys both apps (`.github/workflows/pages.yml`).
+- The API is deployed from your machine: `npm run deploy:supabase -w api` (needs `SUPABASE_ACCESS_TOKEN` and `SUPABASE_PROJECT_REF` in `api/.env`). It bundles the API, sets function secrets, deploys, runs migrations, and on an empty database imports `api/data/export.sql` (create with `npm run export:sql -w api`).
+- Tables are locked down with row-level security and revoked `anon`/`authenticated` grants: the public Supabase anon key cannot read any data. Only the Edge Function (server-side) touches the database and storage.
+- Admin sessions use a Bearer token kept in `sessionStorage` when the app and API are on different domains (local dev still uses the httpOnly cookie).
 
 ## Run locally
 

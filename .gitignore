@@ -8,3 +8,6 @@ dev-dist/
 # Local data (database + uploaded files)
 api/data/
 api/storage/
+
+# Built at deploy time
+supabase/functions/api/index.js

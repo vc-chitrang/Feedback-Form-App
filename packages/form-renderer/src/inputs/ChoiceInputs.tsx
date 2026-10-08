@@ -177,43 +177,6 @@ export function MultiChoiceInput({ q, value, onChange, locale, fallbackLocale, l
   );
 }
 
-export function DropdownInput({ q, value, onChange, locale, fallbackLocale, labelId, errorId, invalid }: InputProps<'dropdown'>) {
-  const v = (value as ChoiceValue | null) ?? null;
-  const selectedOpt = q.options.find((o) => o.uid === v?.optionUid);
-  return (
-    <div>
-      <select
-        aria-labelledby={labelId}
-        aria-describedby={invalid ? errorId : undefined}
-        aria-invalid={invalid || undefined}
-        value={v?.optionUid ?? ''}
-        onChange={(e) => {
-          const opt = q.options.find((o) => o.uid === e.target.value);
-          onChange(opt ? (opt.isOther ? { optionUid: opt.uid, otherText: '' } : { optionUid: opt.uid }) : null);
-        }}
-        className={cx(
-          'h-16 w-full appearance-none rounded-2xl border-2 bg-white bg-[length:1.25rem] bg-[right_1.25rem_center] bg-no-repeat px-5 pr-12 text-xl outline-none',
-          "bg-[url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2378716c' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")]",
-          invalid ? 'border-red-400' : 'border-stone-200 focus:border-brand',
-          focusRing,
-        )}
-      >
-        <option value="">{t(q.placeholder, locale, fallbackLocale) || 'Select…'}</option>
-        {q.options.map((o) => (
-          <option key={o.uid} value={o.uid}>
-            {t(o.label, locale, fallbackLocale)}
-          </option>
-        ))}
-      </select>
-      {selectedOpt?.isOther && (
-        <div className="mt-3">
-          <OtherTextBox locale={locale} value={v?.otherText ?? ''} onChange={(text) => onChange({ optionUid: selectedOpt.uid, otherText: text })} />
-        </div>
-      )}
-    </div>
-  );
-}
-
 export function YesNoInput({ value, onChange, onAdvance, labelId }: InputProps<'yes_no'>) {
   const choices = [
     { v: true, label: 'Yes' },

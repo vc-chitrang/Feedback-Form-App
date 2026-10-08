@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react';
 import type { QuestionType } from '@ff/form-schema';
-import { ConsentInput, DropdownInput, MultiChoiceInput, SingleChoiceInput, YesNoInput } from './inputs/ChoiceInputs';
+import { ConsentInput, MultiChoiceInput, SingleChoiceInput, YesNoInput } from './inputs/ChoiceInputs';
+import { DropdownInput } from './inputs/DropdownInput';
 import { DateInput, EmailInput, LongTextInput, NumberInput, PhoneInput, ShortTextInput } from './inputs/TextInputs';
 import { EmojiInput, NpsInput, RatingInput, SliderInput } from './inputs/ScaleInputs';
 import type { AnyInputProps, InputProps } from './inputs/types';

@@ -260,7 +260,8 @@ export function QuestionEditor({ q, index, locale, readOnly, publishedType, answ
       )}
 
       {q.type === 'dropdown' && (
-        <Field label="Placeholder">
+        <Field label="Placeholder" hint="Visitors can search the list. To let them type a value that is not listed, add an option and tick “Asks to specify (Other)”.">
+
           <TextInput value={text(q.placeholder)} disabled={readOnly} placeholder="Select…" onChange={(e) => setI18n('placeholder', e.target.value)} />
         </Field>
       )}

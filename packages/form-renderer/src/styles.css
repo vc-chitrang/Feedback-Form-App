@@ -1,0 +1,95 @@
+/*
+ * Shared design tokens for the form renderer. Imported by admin-app and client-app
+ * AFTER `@import "tailwindcss"` so the brand colour and animations resolve in both apps.
+ * The brand colour comes from the published form theme via the `--brand` CSS variable.
+ */
+@theme inline {
+  --color-brand: var(--brand, #7a1f2b);
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', 'Noto Sans', sans-serif;
+  --font-display: 'Fraunces Variable', Georgia, 'Noto Serif', serif;
+  --animate-step-in: ff-step-in 0.28s cubic-bezier(0.2, 0.7, 0.2, 1);
+  --animate-pop: ff-pop 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.3);
+}
+
+@keyframes ff-step-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ff-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ff-countdown {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+/* Slider: hide the thumb until the visitor has actually picked a value (no biased default). */
+.ff-range {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  width: 100%;
+  height: 3rem;
+  cursor: pointer;
+}
+.ff-range::-webkit-slider-runnable-track {
+  height: 0.5rem;
+  border-radius: 999px;
+  background: #e7e5e4;
+}
+.ff-range::-moz-range-track {
+  height: 0.5rem;
+  border-radius: 999px;
+  background: #e7e5e4;
+}
+.ff-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin-top: -0.875rem;
+  border-radius: 999px;
+  background: var(--brand, #7a1f2b);
+  border: 4px solid white;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.25);
+}
+.ff-range::-moz-range-thumb {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  background: var(--brand, #7a1f2b);
+  border: 4px solid white;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.25);
+}
+.ff-range[data-untouched='true']::-webkit-slider-thumb {
+  background: #a8a29e;
+}
+.ff-range[data-untouched='true']::-moz-range-thumb {
+  background: #a8a29e;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-step-in,
+  .animate-pop {
+    animation: none;
+  }
+}

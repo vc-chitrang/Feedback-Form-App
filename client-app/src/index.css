@@ -1,0 +1,30 @@
+@import 'tailwindcss';
+@import '@ff/form-renderer/styles.css';
+
+@source '../../packages/form-renderer/src';
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply overflow-hidden bg-stone-50 font-sans text-stone-900 antialiased;
+  /* No double-tap zoom / 300 ms delay on touch screens. */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+/* Kiosk: no text selection / long-press menus, except in form fields. */
+.kiosk {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.kiosk input,
+.kiosk textarea {
+  user-select: text;
+  -webkit-user-select: text;
+}

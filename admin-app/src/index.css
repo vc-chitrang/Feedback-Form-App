@@ -1,0 +1,19 @@
+@import 'tailwindcss';
+@import '@ff/form-renderer/styles.css';
+
+/* Tailwind must also scan the shared renderer for class names. */
+@source '../../packages/form-renderer/src';
+
+@theme {
+  --color-ink: #1c1917;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-stone-100 font-sans text-stone-900 antialiased;
+}

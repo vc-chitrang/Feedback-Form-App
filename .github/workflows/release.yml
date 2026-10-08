@@ -1,0 +1,51 @@
+name: Release
+
+# Create a release by pushing a version tag:
+#   git tag v0.1.0 && git push origin v0.1.0
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write # needed to create the GitHub Release
+
+jobs:
+  release:
+    name: Verify and publish release artifacts
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Tests
+        run: npm test
+
+      - name: Build web apps
+        run: npm run build
+
+      - name: Package artifacts
+        run: |
+          mkdir -p release
+          (cd admin-app/dist && zip -qr "../../release/admin-app-${GITHUB_REF_NAME}.zip" .)
+          (cd client-app/dist && zip -qr "../../release/client-app-${GITHUB_REF_NAME}.zip" .)
+          # API ships as source (runs with Node 22 + tsx); secrets/data are never included.
+          git archive --format=zip -o "release/api-${GITHUB_REF_NAME}.zip" HEAD api packages package.json package-lock.json tsconfig.base.json
+          (cd release && sha256sum *.zip > SHA256SUMS.txt)
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" release/* --title "$GITHUB_REF_NAME" --generate-notes

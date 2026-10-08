@@ -88,7 +88,7 @@ export function DevicesPage() {
   const publicUrl = `${CLIENT_URL}/?f=${encodeURIComponent(data.publicSlug)}`;
 
   return (
-    <div className="mx-auto max-w-6xl p-6">
+    <div className="mx-auto max-w-6xl p-4 sm:p-6">
       <PageHeader
         title="Devices & QR"
         description="Kiosk tablets pair once with a code. Visitors can also scan the QR code to answer on their own phone."
@@ -101,21 +101,51 @@ export function DevicesPage() {
         }
       />
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <Card>
           {data.items.length === 0 ? (
             <EmptyState icon={<Tablet />} title="No kiosks paired">
               Click “Add kiosk”, then open the client app on the tablet and enter the code.
             </EmptyState>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+            {/* Phones: one card per kiosk. */}
+            <ul className="divide-y divide-stone-100 lg:hidden">
+              {data.items.map((d) => {
+                const online = d.lastSeenAt && Date.now() - new Date(d.lastSeenAt).getTime() < ONLINE_WINDOW_MS;
+                const outdated = data.liveVersion && d.runningVersion && d.runningVersion.id !== data.liveVersion.id;
+                return (
+                  <li key={d.id} className="space-y-2 p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="font-medium text-stone-900">{d.name}</span>
+                      <span className="flex items-center gap-1.5 text-sm">
+                        <span className={`size-2 rounded-full ${online ? 'bg-emerald-500' : 'bg-stone-300'}`} />
+                        {online ? 'Online' : 'Offline'}
+                      </span>
+                    </div>
+                    <p className="flex flex-wrap items-center gap-2 text-sm text-stone-500">
+                      <span>Seen {timeAgo(d.lastSeenAt)}</span>
+                      {d.runningVersion && <span>· v{d.runningVersion.number}</span>}
+                      {d.outboxSize > 0 && <Badge tone="amber">{d.outboxSize} waiting to sync</Badge>}
+                      {outdated && <Badge tone="amber">Updates to v{data.liveVersion!.number} when idle</Badge>}
+                    </p>
+                    {canEdit && (
+                      <Button size="sm" variant="secondary" className="w-full" icon={<Trash2 className="size-4" />} onClick={() => void revoke(d)}>
+                        Remove
+                      </Button>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+            <div className="hidden overflow-x-auto lg:block">
               <table className="w-full text-left text-sm">
                 <thead className="border-b border-stone-200 text-xs tracking-wide text-stone-500 uppercase">
                   <tr>
                     <th className="px-5 py-3 font-medium">Kiosk</th>
                     <th className="px-5 py-3 font-medium">Status</th>
-                    <th className="px-5 py-3 font-medium">Form version</th>
-                    <th className="px-5 py-3 text-right font-medium">Waiting to sync</th>
+                    <th className="hidden px-5 py-3 font-medium sm:table-cell">Form version</th>
+                    <th className="hidden px-5 py-3 text-right font-medium md:table-cell">Waiting to sync</th>
                     <th className="px-5 py-3" />
                   </tr>
                 </thead>
@@ -133,7 +163,7 @@ export function DevicesPage() {
                             <span className="text-xs text-stone-400">{timeAgo(d.lastSeenAt)}</span>
                           </span>
                         </td>
-                        <td className="px-5 py-3">
+                        <td className="hidden px-5 py-3 sm:table-cell">
                           {d.runningVersion ? (
                             <span className="flex items-center gap-2">
                               v{d.runningVersion.number}
@@ -143,7 +173,7 @@ export function DevicesPage() {
                             <span className="text-stone-400">—</span>
                           )}
                         </td>
-                        <td className="px-5 py-3 text-right tabular-nums">{d.outboxSize > 0 ? <Badge tone="amber">{d.outboxSize}</Badge> : <span className="text-stone-400">0</span>}</td>
+                        <td className="hidden px-5 py-3 text-right tabular-nums md:table-cell">{d.outboxSize > 0 ? <Badge tone="amber">{d.outboxSize}</Badge> : <span className="text-stone-400">0</span>}</td>
                         <td className="px-5 py-3 text-right">
                           {canEdit && (
                             <Button size="sm" variant="ghost" icon={<Trash2 className="size-4" />} onClick={() => void revoke(d)}>
@@ -157,6 +187,7 @@ export function DevicesPage() {
                 </tbody>
               </table>
             </div>
+            </>
           )}
         </Card>
 

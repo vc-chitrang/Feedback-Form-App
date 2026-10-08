@@ -118,13 +118,16 @@ function ResponseRow({ r }: { r: ResponseItem }) {
   const [open, setOpen] = useState(false);
   return (
     <li className="border-b border-stone-100 last:border-0">
-      <button type="button" onClick={() => setOpen(!open)} aria-expanded={open} className="flex w-full items-center gap-4 px-5 py-3 text-left text-sm hover:bg-stone-50">
-        {r.channel === 'kiosk' ? <Tablet className="size-4 text-stone-400" /> : <Smartphone className="size-4 text-stone-400" />}
-        <span className="w-44 shrink-0 text-stone-700">{formatDateTime(r.receivedAt)}</span>
+      <button type="button" onClick={() => setOpen(!open)} aria-expanded={open} className="flex w-full items-center gap-3 px-4 py-3 sm:gap-4 sm:px-5 text-left text-sm hover:bg-stone-50">
+        {r.channel === 'kiosk' ? <Tablet className="size-4 shrink-0 text-stone-400" /> : <Smartphone className="size-4 shrink-0 text-stone-400" />}
+        <span className="min-w-0 shrink-0 text-stone-700 sm:w-44">{formatDateTime(r.receivedAt)}</span>
         <Badge>v{r.versionNumber}</Badge>
-        <span className="min-w-0 flex-1 truncate text-stone-500">{r.deviceName ?? 'QR / link'}</span>
-        <span className="text-stone-400 tabular-nums">{r.answers.length} answers</span>
-        <ChevronDown className={cx('size-4 text-stone-400 transition', open && 'rotate-180')} />
+        <span className="hidden min-w-0 flex-1 truncate text-stone-500 sm:block">{r.deviceName ?? 'QR / link'}</span>
+        <span className="ml-auto shrink-0 text-stone-400 tabular-nums sm:ml-0">
+          {r.answers.length}
+          <span className="hidden sm:inline"> answers</span>
+        </span>
+        <ChevronDown className={cx('size-4 shrink-0 text-stone-400 transition', open && 'rotate-180')} />
       </button>
       {open && (
         <dl className="grid gap-x-6 gap-y-3 bg-stone-50 px-5 py-4 text-sm sm:grid-cols-2">
@@ -210,7 +213,7 @@ export function ResponsesPage() {
   };
 
   return (
-    <div className="mx-auto max-w-6xl p-6">
+    <div className="mx-auto max-w-6xl p-4 sm:p-6">
       <PageHeader
         title="Responses"
         description="Results combine every version by question, so removed questions keep their history."

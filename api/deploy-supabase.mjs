@@ -74,9 +74,13 @@ const [{ n }] = await sqlQuery('select count(*)::int as n from tenant');
 if (n > 0) console.log('   database already has data — not importing.');
 else {
   const file = here('./data/export.sql');
-  if (!existsSync(file)) throw new Error('No api/data/export.sql. Run: npm run export:sql -w api');
-  await sqlQuery(readFileSync(file, 'utf8'));
-  const [c] = await sqlQuery('select (select count(*)::int from submission) as responses, (select count(*)::int from form_version) as versions');
-  console.log(`   imported ${c.responses} responses, ${c.versions} versions`);
+  if (!existsSync(file)) {
+    // CI never has the export (it is git-ignored); an empty DB just stays empty until seeded.
+    console.warn('   database is empty and no api/data/export.sql found — skipping data import.');
+  } else {
+    await sqlQuery(readFileSync(file, 'utf8'));
+    const [c] = await sqlQuery('select (select count(*)::int from submission) as responses, (select count(*)::int from form_version) as versions');
+    console.log(`   imported ${c.responses} responses, ${c.versions} versions`);
+  }
 }
 console.log(`\nAPI live at ${base}`);

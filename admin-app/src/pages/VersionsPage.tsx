@@ -63,7 +63,7 @@ export function VersionsPage() {
   if (!items) return <PageLoader />;
 
   return (
-    <div className="mx-auto max-w-5xl p-6">
+    <div className="mx-auto max-w-5xl p-4 sm:p-6">
       <PageHeader title="Versions" description="Every publish creates a new, read-only version. Each response stays linked to the exact version the visitor saw." />
       <p className="mb-5 flex items-start gap-2 rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-900 ring-1 ring-emerald-200">
         <ShieldCheck className="mt-0.5 size-4 shrink-0" />
@@ -73,13 +73,44 @@ export function VersionsPage() {
         {items.length === 0 ? (
           <EmptyState icon={<History />} title="Nothing published yet" />
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          {/* Phones: one card per version. */}
+          <ul className="divide-y divide-stone-100 lg:hidden">
+            {items.map((v) => (
+              <li key={v.id} className="space-y-3 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="flex items-center gap-2">
+                    <span className="font-semibold">v{v.number}</span>
+                    {v.status === 'PUBLISHED' ? <Badge tone="green">Live</Badge> : <Badge>Archived</Badge>}
+                  </span>
+                  <span className="text-sm text-stone-600 tabular-nums">
+                    {v.submissions.toLocaleString()} {v.submissions === 1 ? 'response' : 'responses'}
+                  </span>
+                </div>
+                <p className="text-sm text-stone-500">
+                  {formatDateTime(v.publishedAt)}
+                  {v.publishedBy && ` · ${v.publishedBy}`} · {v.questionCount} questions
+                </p>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="secondary" className="flex-1" icon={<Eye className="size-4" />} onClick={() => void openPreview(v)}>
+                    View
+                  </Button>
+                  {canEdit && v.status !== 'PUBLISHED' && (
+                    <Button size="sm" className="flex-1" icon={<RotateCcw className="size-4" />} onClick={() => void rollback(v)}>
+                      Roll back
+                    </Button>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+          <div className="hidden overflow-x-auto lg:block">
             <table className="w-full text-left text-sm">
               <thead className="border-b border-stone-200 text-xs tracking-wide text-stone-500 uppercase">
                 <tr>
                   <th className="px-5 py-3 font-medium">Version</th>
                   <th className="px-5 py-3 font-medium">Published</th>
-                  <th className="px-5 py-3 text-right font-medium">Questions</th>
+                  <th className="hidden px-5 py-3 text-right font-medium sm:table-cell">Questions</th>
                   <th className="px-5 py-3 text-right font-medium">Responses</th>
                   <th className="px-5 py-3" />
                 </tr>
@@ -95,7 +126,7 @@ export function VersionsPage() {
                       {formatDateTime(v.publishedAt)}
                       {v.publishedBy && <span className="block text-xs text-stone-400">by {v.publishedBy}</span>}
                     </td>
-                    <td className="px-5 py-3 text-right tabular-nums">{v.questionCount}</td>
+                    <td className="hidden px-5 py-3 text-right tabular-nums sm:table-cell">{v.questionCount}</td>
                     <td className="px-5 py-3 text-right tabular-nums">{v.submissions.toLocaleString()}</td>
                     <td className="px-5 py-3">
                       <div className="flex justify-end gap-2">
@@ -114,6 +145,7 @@ export function VersionsPage() {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </Card>
 

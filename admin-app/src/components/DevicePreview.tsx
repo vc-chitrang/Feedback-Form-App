@@ -26,7 +26,8 @@ export function DevicePreview({ device, children }: { device: PreviewDevice; chi
   }, []);
 
   const maxW = device === 'phone' ? Math.min(width, 340) : width;
-  const scale = maxW > 0 ? Math.min(1, maxW / size.w) : 0;
+  // The frame adds 16px of padding (p-2 each side); keep the total within the column.
+  const scale = maxW > 16 ? Math.min(1, (maxW - 16) / size.w) : 0;
 
   return (
     <div ref={outer} className="w-full">

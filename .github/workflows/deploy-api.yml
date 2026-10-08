@@ -1,0 +1,49 @@
+name: Deploy API (Supabase Edge Function)
+
+# Redeploys the "api" Edge Function when API or shared schema code changes on main.
+# Requires repository secret SUPABASE_ACCESS_TOKEN (Settings → Secrets and variables → Actions).
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'api/**'
+      - 'packages/form-schema/**'
+      - 'package-lock.json'
+      - '.github/workflows/deploy-api.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Never run two deploys at once; finish the current one before starting the next.
+concurrency:
+  group: deploy-api
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: supabase-production
+      url: https://xzaaiztphayjjnvkkmvl.supabase.co/functions/v1/api/health
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+
+      - name: Typecheck API
+        run: npx tsc -p packages/form-schema && npx tsc -p api
+
+      - name: Tests (must pass before deploying)
+        run: npm test
+
+      - name: Deploy edge function, run migrations, health check
+        run: npm run deploy:supabase -w api
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: xzaaiztphayjjnvkkmvl
+          CORS_ORIGINS: https://vc-chitrang.github.io

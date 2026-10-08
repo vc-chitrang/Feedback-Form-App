@@ -167,9 +167,9 @@ export function BuilderPage() {
   return (
     <div className="flex h-full min-h-0 flex-col">
       {/* Toolbar */}
-      <div className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-stone-200 bg-stone-100/90 px-6 py-3 backdrop-blur">
+      <div className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-stone-200 bg-stone-100/90 px-4 py-3 sm:px-6 backdrop-blur">
         <div className="flex min-w-0 items-center gap-3">
-          <h1 className="font-display text-2xl">Form builder</h1>
+          <h1 className="font-display text-xl sm:text-2xl">Form builder</h1>
           {editing ? (
             <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-900">
               Draft{state.live ? ` · based on v${state.live.number}` : ''}
@@ -182,7 +182,7 @@ export function BuilderPage() {
           {editing && <SaveIndicator state={saveState} onReload={() => void reload()} />}
         </div>
         {canEdit && (
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {editing ? (
               <>
                 <Button variant="ghost" icon={<Trash2 className="size-4" />} onClick={() => void onDiscard()}>
@@ -211,7 +211,7 @@ export function BuilderPage() {
       </div>
 
       {!editing && (
-        <div className="mx-6 mt-4 flex items-start gap-2 rounded-xl bg-white px-4 py-3 text-sm text-stone-600 ring-1 ring-stone-200">
+        <div className="mx-4 mt-4 flex items-start gap-2 rounded-xl sm:mx-6 bg-white px-4 py-3 text-sm text-stone-600 ring-1 ring-stone-200">
           <Lock className="mt-0.5 size-4 shrink-0 text-stone-400" />
           <span>
             You are viewing the live form. {canEdit ? 'Click “Edit form” to open a draft — ' : ''}visitors keep seeing the live version until a draft is published. Reordering, adding or removing
@@ -220,7 +220,7 @@ export function BuilderPage() {
         </div>
       )}
 
-      <div className="grid min-h-0 flex-1 gap-5 p-6 lg:grid-cols-[minmax(260px,320px)_minmax(0,1fr)] xl:grid-cols-[280px_minmax(340px,1fr)_minmax(380px,520px)]">
+      <div className="grid min-h-0 flex-1 gap-5 p-4 sm:p-6 lg:grid-cols-[minmax(260px,320px)_minmax(0,1fr)] xl:grid-cols-[280px_minmax(340px,1fr)_minmax(380px,520px)]">
         {/* Question list */}
         <section aria-label="Questions" className="min-w-0">
           <div className="mb-3 flex items-center justify-between">
@@ -247,6 +247,10 @@ export function BuilderPage() {
               onSelect={(uid) => {
                 setSelectedUid(uid);
                 setScreen('form');
+                // Stacked layout (phones / small tablets): bring the editor into view.
+                if (window.matchMedia('(max-width: 1023px)').matches) {
+                  requestAnimationFrame(() => document.getElementById('question-editor')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+                }
               }}
               onReorder={(from, to) =>
                 update((d) => {
@@ -266,7 +270,7 @@ export function BuilderPage() {
         </section>
 
         {/* Editor */}
-        <section aria-label="Question settings" className="min-w-0">
+        <section id="question-editor" aria-label="Question settings" className="min-w-0 scroll-mt-20">
           <Card className="p-6">
             {selected ? (
               <QuestionEditor

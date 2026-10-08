@@ -139,7 +139,7 @@ export function FormFlow({ doc, locale, onSubmit, onExit, step: controlledStep, 
 
   return (
     <div style={themeStyle(doc.theme)} className="@container flex h-full flex-col bg-stone-50 font-sans text-stone-900">
-      <header className="px-6 pt-5 @2xl:px-12 @2xl:pt-8">
+      <header className="px-6 pt-5 @2xl:px-12 @2xl:pt-8 [@media(max-height:520px)]:pt-3">
         <div className="mx-auto max-w-2xl">
           <div className="flex items-center justify-between text-sm font-medium text-stone-500">
             <span>
@@ -160,7 +160,7 @@ export function FormFlow({ doc, locale, onSubmit, onExit, step: controlledStep, 
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto px-6 py-8 @2xl:px-12 @2xl:py-12">
+      <main className="flex-1 overflow-y-auto px-6 py-8 @2xl:px-12 @2xl:py-12 [@media(max-height:520px)]:py-4">
         <div key={q.uid} className="animate-step-in mx-auto max-w-2xl">
           <h2
             id={labelId}
@@ -168,7 +168,7 @@ export function FormFlow({ doc, locale, onSubmit, onExit, step: controlledStep, 
             tabIndex={-1}
             className={cx(
               'font-display leading-tight text-balance text-stone-900 outline-none',
-              isSection ? 'text-3xl @2xl:text-5xl' : 'text-2xl @2xl:text-4xl',
+              isSection ? 'text-3xl @2xl:text-5xl [@media(max-height:520px)]:text-2xl' : 'text-2xl @2xl:text-4xl [@media(max-height:520px)]:text-2xl',
             )}
           >
             {t(q.label, locale, L) || <span className="text-stone-300">Untitled question</span>}
@@ -182,7 +182,7 @@ export function FormFlow({ doc, locale, onSubmit, onExit, step: controlledStep, 
           {q.help && t(q.help, locale, L) && <p className="mt-3 text-lg text-stone-500 @2xl:text-xl">{t(q.help, locale, L)}</p>}
 
           {!isSection && (
-            <div className="mt-8">
+            <div className="mt-8 [@media(max-height:520px)]:mt-4">
               <QuestionInput
                 q={q}
                 value={answers[q.uid] ?? null}
@@ -206,7 +206,7 @@ export function FormFlow({ doc, locale, onSubmit, onExit, step: controlledStep, 
         </div>
       </main>
 
-      <footer className="border-t border-stone-200 bg-white/90 px-6 py-4 backdrop-blur @2xl:px-12">
+      <footer className="border-t border-stone-200 bg-white/90 px-6 py-4 backdrop-blur @2xl:px-12 [@media(max-height:520px)]:py-2">
         <div className="mx-auto flex max-w-2xl items-center justify-between gap-4">
           {step > 0 || onExit ? (
             <button

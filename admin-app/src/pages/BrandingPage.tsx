@@ -53,7 +53,7 @@ export function BrandingPage() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl p-6">
+    <div className="mx-auto max-w-7xl p-4 sm:p-6">
       <PageHeader
         title="Branding & kiosk"
         description="Your logo appears on the welcome and thank-you screens. Branding is versioned with the form, so it goes live together when you publish."
@@ -77,7 +77,7 @@ export function BrandingPage() {
         </p>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
         <div className="space-y-6">
           <Card className="p-6">
             <h2 className="mb-1 font-semibold">Logo</h2>

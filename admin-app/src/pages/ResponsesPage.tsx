@@ -258,9 +258,12 @@ export function ResponsesPage() {
             <span className="font-display text-4xl text-stone-900">{summary.totalResponses.toLocaleString()}</span>{' '}
             {summary.totalResponses === 1 ? 'response' : 'responses'}
           </p>
-          <div className="mb-8 grid gap-4 md:grid-cols-2">
+          {/* Masonry: cards keep their natural height instead of stretching to the tallest in the row. */}
+          <div className="mb-8 columns-1 gap-4 md:columns-2 2xl:columns-3">
             {summary.questions.map((q) => (
-              <QuestionSummary key={q.uid} q={q} />
+              <div key={q.uid} className="mb-4 break-inside-avoid">
+                <QuestionSummary q={q} />
+              </div>
             ))}
           </div>
           <h2 className="mb-3 font-semibold">Individual responses</h2>
